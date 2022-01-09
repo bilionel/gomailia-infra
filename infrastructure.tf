@@ -119,10 +119,19 @@ resource "aws_security_group" "web-mail-server-sg" {
     }
 }
 
+# Key pairs
+resource "aws_key_pair" "aws_mail_key" {
+  key_name   = "aws-mail-key"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC+pkiYXx9qNZeIJYc01LEiHSt2IQ6Q2qh4K+YblmErvHUkGpixgQ0KneZvScJeY5wY2UwUh3SO+PrdlMqSgZ4srXm5K7vCxv5ghiSzP8ak1oDBRlDMp/StuEAdizWSVPfVKj0EAyEuV0lqtlD0WLDLBnXfWfklC8bK6yKrW87whVGfAtNg2d75bTl/fvTpEuZ6/umQsGHz3UtEeyJ7AZgqRrjzwAg6D4IgQgMSbT7LwUaJn6q2cColk7y48I5BwYpf/GYQVIYubdeedcbAh2NUY8W9cjcdHS6a87qjfr4i6P0MvUVcCtsWjxbNWxKEwlDmWLAh59pX4d9Q88K6MUYmcxunvWCqQcYLcIv9vstpRoP0aqnakD22DrLuGo+gCPSX9yS2VJ9letrkRCyf8nGi10nIiu4TuvcEsbSXrRYA0iTPDS437UPX0YDb9nGidpXZ1x40wqyYRo2HZFNjCZeseao7CUcFxy/TYmhdrez7ccOTwCvddXLVDCMAmqZL1fc= l.tsimi.ext@ldp-1759"
+}
+
+
 # Instances
 resource "aws_instance" "mail_server" {
     ami = nonsensitive(data.aws_ssm_parameter.ami.value)
     instance_type = "t2.micro"
     subnet_id = aws_subnet.subnet1.id
+    associate_public_ip_address = "true"
+    key_name = "aws-mail-key"
     vpc_security_group_ids = [aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id]
 }
