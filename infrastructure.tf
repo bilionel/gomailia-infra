@@ -17,6 +17,25 @@ data "aws_ssm_parameter" "ami" {
     name = "/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/ebs-gp2/ami-id"
 }
 
+data "aws_ami" "ubuntu-ami" {
+  owners = ["099720109477"]
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220110"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
 #############################################################
 #   resource
 #############################################################
@@ -147,7 +166,7 @@ resource "aws_security_group" "web-mail-server-sg" {
     # HTTP access from anywhere
     ingress {
         from_port = 0
-        to_port = 80
+        to_port = 443
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
@@ -172,7 +191,16 @@ resource "aws_key_pair" "aws_mail_key" {
 # Instances
 
 resource "aws_instance" "mail_server" {
-    ami = nonsensitive(data.aws_ssm_parameter.ami.value)
+    ami = data.aws_ami.ubuntu-ami.id
+    instance_type = "t2.micro"
+    subnet_id = aws_subnet.subnet1.id
+    associate_public_ip_address = "true"
+    key_name = "aws-mail-key"
+    vpc_security_group_ids = [aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id]
+}
+
+resource "aws_instance" "ldap_mail_server" {
+    ami = data.aws_ami.ubuntu-ami.id
     instance_type = "t2.micro"
     subnet_id = aws_subnet.subnet1.id
     associate_public_ip_address = "true"
