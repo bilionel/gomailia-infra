@@ -197,6 +197,11 @@ resource "aws_instance" "mail_server" {
     associate_public_ip_address = "true"
     key_name = "aws-mail-key"
     vpc_security_group_ids = [aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id]
+    lifecycle {
+      ignore_changes = [
+        associate_public_ip_address,
+      ]
+    }
 }
 
 resource "aws_instance" "ldap_mail_server" {
@@ -206,6 +211,25 @@ resource "aws_instance" "ldap_mail_server" {
     associate_public_ip_address = "true"
     key_name = "aws-mail-key"
     vpc_security_group_ids = [aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id]
+    lifecycle {
+      ignore_changes = [
+        associate_public_ip_address,
+      ]
+    }
+}
+
+resource "aws_instance" "Instant_Message_server" {
+    ami = data.aws_ami.ubuntu-ami.id
+    instance_type = "t2.micro"
+    subnet_id = aws_subnet.subnet1.id
+    associate_public_ip_address = "true"
+    key_name = "aws-mail-key"
+    vpc_security_group_ids = [aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id]
+    lifecycle {
+      ignore_changes = [
+        associate_public_ip_address,
+      ]
+    }
 }
 
 # Database Instances
