@@ -102,7 +102,7 @@ resource "aws_security_group" "ssh-server-sg" {
 
     # SMTP access from anywhere
     ingress {
-        from_port = 0
+        from_port = 22
         to_port = 22
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
@@ -123,7 +123,7 @@ resource "aws_security_group" "mail-database-sg" {
 
     # SMTP access from anywhere
     ingress {
-        from_port = 0
+        from_port = 3306
         to_port = 3306
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
@@ -144,7 +144,7 @@ resource "aws_security_group" "mail-server-sg" {
 
     # SMTP access from anywhere
     ingress {
-        from_port = 0
+        from_port = 25
         to_port = 25
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
@@ -165,8 +165,57 @@ resource "aws_security_group" "web-mail-server-sg" {
 
     # HTTP access from anywhere
     ingress {
-        from_port = 0
+        from_port = 443
         to_port = 443
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    
+    ingress {
+        from_port = 80
+        to_port = 80
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+   
+    # Outbound internet access
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_security_group" "instant-message-server-sg" {
+    name = "instant-message-server-sg"
+    vpc_id = aws_vpc.vpc.id
+
+    # HTTP access from anywhere
+    ingress {
+        from_port = 3000
+        to_port = 3000
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # Outbound internet access
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_security_group" "LDAP-server-sg" {
+    name = "LDAP-server-sg"
+    vpc_id = aws_vpc.vpc.id
+
+    # HTTP access from anywhere
+    ingress {
+        from_port = 389
+        to_port = 389
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
@@ -210,7 +259,7 @@ resource "aws_instance" "ldap_mail_server" {
     subnet_id = aws_subnet.subnet1.id
     associate_public_ip_address = "true"
     key_name = "aws-mail-key"
-    vpc_security_group_ids = [aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id]
+    vpc_security_group_ids = [aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id, aws_security_group.LDAP-server-sg.id]
     lifecycle {
       ignore_changes = [
         associate_public_ip_address,
@@ -224,7 +273,21 @@ resource "aws_instance" "Instant_Message_server" {
     subnet_id = aws_subnet.subnet1.id
     associate_public_ip_address = "true"
     key_name = "aws-mail-key"
-    vpc_security_group_ids = [aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id]
+    vpc_security_group_ids = [aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id, aws_security_group.instant-message-server-sg.id]
+    lifecycle {
+      ignore_changes = [
+        associate_public_ip_address,
+      ]
+    }
+}
+
+resource "aws_instance" "rocket_chat_server" {
+    ami = data.aws_ami.ubuntu-ami.id
+    instance_type = "t2.micro"
+    subnet_id = aws_subnet.subnet1.id
+    associate_public_ip_address = "true"
+    key_name = "aws-mail-key"
+    vpc_security_group_ids = [aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id, aws_security_group.instant-message-server-sg.id]
     lifecycle {
       ignore_changes = [
         associate_public_ip_address,
