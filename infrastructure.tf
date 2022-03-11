@@ -187,6 +187,34 @@ resource "aws_security_group" "web-mail-server-sg" {
     }
 }
 
+resource "aws_security_group" "drive-server-sg" {
+    name = "drive-server-sg"
+    vpc_id = aws_vpc.vpc.id
+
+    # HTTP access from anywhere
+    ingress {
+        from_port = 8000
+        to_port = 8000
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    
+    ingress {
+        from_port = 8082
+        to_port = 8082
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+   
+    # Outbound internet access
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
 resource "aws_security_group" "instant-message-server-sg" {
     name = "instant-message-server-sg"
     vpc_id = aws_vpc.vpc.id
@@ -216,6 +244,27 @@ resource "aws_security_group" "LDAP-server-sg" {
     ingress {
         from_port = 389
         to_port = 389
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # Outbound internet access
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_security_group" "libreoffice-server-sg" {
+    name = "libreoffice-server-sg"
+    vpc_id = aws_vpc.vpc.id
+
+    # HTTP access from anywhere
+    ingress {
+        from_port = 9980
+        to_port = 9980
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
@@ -301,7 +350,21 @@ resource "aws_instance" "seafile_server" {
     subnet_id = aws_subnet.subnet1.id
     associate_public_ip_address = "true"
     key_name = "aws-mail-key"
-    vpc_security_group_ids = [aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id, aws_security_group.instant-message-server-sg.id]
+    vpc_security_group_ids = [aws_security_group.drive-server-sg.id, aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id, aws_security_group.instant-message-server-sg.id]
+    lifecycle {
+      ignore_changes = [
+        associate_public_ip_address,
+      ]
+    }
+}
+
+resource "aws_instance" "libreoffice_server" {
+    ami = data.aws_ami.ubuntu-ami.id
+    instance_type = "t2.micro"
+    subnet_id = aws_subnet.subnet1.id
+    associate_public_ip_address = "true"
+    key_name = "aws-mail-key"
+    vpc_security_group_ids = [aws_security_group.libreoffice-server-sg.id, aws_security_group.drive-server-sg.id, aws_security_group.mail-server-sg.id, aws_security_group.web-mail-server-sg.id, aws_security_group.ssh-server-sg.id, aws_security_group.instant-message-server-sg.id]
     lifecycle {
       ignore_changes = [
         associate_public_ip_address,
