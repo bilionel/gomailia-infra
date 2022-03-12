@@ -373,7 +373,6 @@ resource "aws_instance" "libreoffice_server" {
 }
 
 # Database Instances
-
 resource "aws_db_instance" "mail_database_instance" {
   allocated_storage    = 20
   engine               = "mysql"
