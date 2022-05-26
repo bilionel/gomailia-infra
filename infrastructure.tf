@@ -3,9 +3,9 @@
 #############################################################
 
 provider "aws" {
-    access_key = "AKIAQQY5CCC5BJYLIBPL"
-    secret_key = "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"
-    region = "us-east-2"
+    access_key = "AKIARUHWLGNXCEPFC6QI"
+    secret_key = "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"
+    region = "us-east-1"
 }
 
 #############################################################
@@ -59,13 +59,13 @@ resource "aws_subnet" "subnet1" {
 resource "aws_subnet" "subnet2" {
     cidr_block =  "10.0.1.0/24"
     vpc_id = aws_vpc.vpc.id
-    availability_zone = "us-east-2a"
+    availability_zone = "us-east-1a"
 }
 
 resource "aws_subnet" "subnet3" {
     cidr_block =  "10.0.2.0/24"
     vpc_id = aws_vpc.vpc.id
-    availability_zone = "us-east-2c"
+    availability_zone = "us-east-1c"
 }
 
 resource "aws_db_subnet_group" "mail-subnet-group" {
@@ -300,6 +300,9 @@ resource "aws_instance" "mail_server" {
         associate_public_ip_address,
       ]
     }
+    tags = {
+    Name = "mail_server"
+    }
 }
 
 resource "aws_instance" "ldap_mail_server" {
@@ -313,6 +316,9 @@ resource "aws_instance" "ldap_mail_server" {
       ignore_changes = [
         associate_public_ip_address,
       ]
+    }
+    tags = {
+    Name = "ldap_mail_server"
     }
 }
 
@@ -328,6 +334,9 @@ resource "aws_instance" "Instant_Message_server" {
         associate_public_ip_address,
       ]
     }
+    tags = {
+    Name = "Instant_Message_server"
+    }
 }
 
 resource "aws_instance" "rocket_chat_server" {
@@ -341,6 +350,9 @@ resource "aws_instance" "rocket_chat_server" {
       ignore_changes = [
         associate_public_ip_address,
       ]
+    }
+    tags = {
+    Name = "rocket_chat_server"
     }
 }
 
@@ -356,6 +368,9 @@ resource "aws_instance" "seafile_server" {
         associate_public_ip_address,
       ]
     }
+    tags = {
+    Name = "seafile_server"
+    }
 }
 
 resource "aws_instance" "libreoffice_server" {
@@ -369,6 +384,9 @@ resource "aws_instance" "libreoffice_server" {
       ignore_changes = [
         associate_public_ip_address,
       ]
+    }
+    tags = {
+    Name = "libreoffice_server"
     }
 }
 
